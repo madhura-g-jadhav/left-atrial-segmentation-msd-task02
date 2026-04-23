@@ -1,0 +1,152 @@
+name: nnunetv2env
+# ============================================================
+#  Windows Conda Environment for nnU-Net v2 (nnUNetv2)
+#  Target Task: Left Atrium Segmentation (MSD Heart Task)
+#  Python: 3.10  |  PyTorch: 2.1.2 + CUDA 12.1
+#  GPU Driver CUDA: 12.6 (fully compatible with cu121 builds)
+# ============================================================
+# UPGRADE NOTES vs. original pytorch_course_env_windows.yml:
+#   - Python 3.8  → 3.10  (nnUNetv2 requires >=3.9)
+#   - torch 1.9.1 → 2.1.2 (nnUNetv2 requires modern torch)
+#   - torchvision 0.10.1 → 0.16.2 (matched to torch 2.1.x)
+#   - pytorch-lightning 1.4.9 → removed (not used by nnUNetv2)
+#   - torchio 0.18.57 → 0.19.x  (updated, kept for data utils)
+#   - Added: nnunetv2, acvl-utils, dynamic-network-architectures
+#   - Added: connected-components-3d, SimpleITK, batchgenerators
+#   - Kept:  nibabel, pydicom, dicom2nifti, scikit-image, scipy
+#            matplotlib, numpy, tqdm, pandas, jupyter stack
+# ============================================================
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  # ── Core Python & system ──────────────────────────────────
+  - python=3.10
+  - pip>=23.0
+  - setuptools>=65.0
+  - wheel>=0.40
+  - ca-certificates
+  - openssl
+  - sqlite
+  - vc=14
+  - vs2015_runtime
+
+  # ── PyTorch (CUDA 12.1 build — compatible with your CUDA 12.6 driver) ──
+  # NVIDIA drivers are backward compatible: cu121 works perfectly on CUDA 12.6
+  - pytorch::pytorch=2.1.2
+  - pytorch::torchvision=0.16.2
+  - pytorch::torchaudio=2.1.2
+  - pytorch::pytorch-cuda=12.1
+
+  # ── Jupyter stack (kept from original) ───────────────────
+  - jupyter
+  - notebook>=6.5
+  - ipykernel>=6.20
+  - ipython>=8.0
+  - ipywidgets>=8.0
+
+  # ── Visualisation (kept from original) ───────────────────
+  - matplotlib>=3.7
+  - tensorboard>=2.12
+
+  # pip-installed packages
+  - pip:
+    # ── nnU-Net v2 core ────────────────────────────────────
+    - nnunetv2                        # latest stable (>=2.2)
+    - acvl-utils>=0.2                 # nnUNetv2 dependency
+    - dynamic-network-architectures>=0.3.1  # nnUNetv2 dependency
+    - batchgenerators>=0.25           # data augmentation engine
+    - batchgeneratorsv2>=0.2          # newer aug engine (v2)
+    - connected-components-3d>=3.12.0 # post-processing utility
+
+    # ── Medical imaging I/O ────────────────────────────────
+    - SimpleITK>=2.3.0
+    - nibabel>=4.0.0
+    - pydicom>=2.4.0
+    - dicom2nifti>=2.4.0
+    - torchio>=0.19.0                 # kept for data loading utils
+
+    # ── Image processing ───────────────────────────────────
+    - scikit-image>=0.21
+    - scipy>=1.11
+    - numpy>=1.24,<2.0                # <2.0 for broad compat
+    - opencv-python>=4.8
+    - pillow>=10.0
+    - imageio>=2.31
+    - pywavelets>=1.4
+    - tifffile>=2023.1
+    - imgaug>=0.4
+
+    # ── Data & utilities ───────────────────────────────────
+    - pandas>=2.0
+    - networkx>=3.0
+    - tqdm>=4.65
+    - humanize>=4.0
+    - pyyaml>=6.0
+    - click>=8.1
+    - packaging>=23.0
+    - psutil>=5.9                     # memory management (nnUNet)
+    - requests>=2.31
+    - six>=1.16
+    - python-dateutil>=2.8
+    - pytz
+
+    # ── Metrics ────────────────────────────────────────────
+    - torchmetrics>=1.0               # updated from 0.5.1
+
+    # ── Jupyter extras (kept from original) ───────────────
+    - jupyterlab-widgets>=3.0
+    - celluloid>=0.2
+    - debugpy>=1.6
+    - nbformat>=5.7
+    - nbconvert>=7.0
+    - nbclient>=0.7
+
+    # ── Windows-specific ──────────────────────────────────
+    - pywin32>=305
+    - colorama>=0.4
+    - pywinpty>=2.0
+    - wincertstore>=0.2
+
+    # ── Optional: TensorBoard auth libs ───────────────────
+    - google-auth>=2.20
+    - google-auth-oauthlib>=1.0
+    - protobuf>=4.23
+
+# ============================================================
+#  AFTER CONDA ENV CREATION — run these in your terminal:
+#
+#  1. Activate environment:
+#       conda activate nnunetv2env
+#
+#  2. Verify PyTorch + CUDA:
+#       python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
+#
+#  3. Set nnU-Net environment variables (Windows CMD):
+#       set nnUNet_raw=C:\nnunet_data\nnUNet_raw
+#       set nnUNet_preprocessed=C:\nnunet_data\nnUNet_preprocessed
+#       set nnUNet_results=C:\nnunet_data\nnUNet_results
+#
+#     Or set them permanently via:
+#       System Properties → Environment Variables → User Variables
+#
+#  4. Convert MSD Heart dataset to nnUNetv2 format:
+#       nnUNetv2_convert_MSD_dataset -i "C:\Users\Admin\Desktop\madhura\Task02_Heart"
+#
+#  5. Plan & Preprocess:
+#       nnUNetv2_plan_and_preprocess -d 2 --verify_dataset_integrity
+#
+#  6. Train (3D full-resolution, fold 0):
+#       nnUNetv2_train 2 3d_fullres 0
+#
+#  7. Find best config after all folds:
+#       nnUNetv2_find_best_configuration 2
+#
+#  8. Predict:
+#       nnUNetv2_predict -i imagesTs -o output -d 2 -c 3d_fullres
+#
+# ============================================================
